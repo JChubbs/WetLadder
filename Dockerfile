@@ -1,5 +1,5 @@
 FROM kylemanna/openvpn
 
-COPY ./scripts/* .
+COPY ./scripts/* ./
 
 CMD ["ovpn_run"]
