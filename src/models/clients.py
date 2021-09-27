@@ -1,5 +1,4 @@
-from src.app import docker_client
-from src.config.config import *
+from src.app import docker_client, config
 from src.models.factory import Factory
 import os
 

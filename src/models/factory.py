@@ -1,5 +1,4 @@
-from src.app import docker_client
-from src.config.config import *
+from src.app import docker_client, logger, config
 import os
 
 class Factory:
@@ -20,8 +19,8 @@ class Factory:
 
 	def build_scripts():
 		scripts_out = {}
-		for f in os.listdir(SCRIPT_TEMPLATES):
-			with open(f"SCRIPT_TEMPLATES/{f}", "r") as f_reader:
+		for f in os.listdir("./script_templates"):
+			with open(f"./script_templates/{f}", "r") as f_reader:
 				lines = f_reader.read()
 				scripts_out[f] = Factory.replace_script_vars(lines)
 
@@ -39,21 +38,27 @@ class Factory:
 		ovpn_volume = docker_client.volumes.create(name=volume_name)
 
 		#build custom image with scripts to pipe to stdin
+		logger.info("Building wet_ladder image!")
 		build_name = Factory.build_name
 		docker_client.images.build(path=".", tag=build_name)
 
 		#generate config
-		genconfig_cmd = f"ovpn_genconfig -u {VPN_PROTO}://{VPN_HOST}:{VPN_PORT}"
-		docker_client.containers.run(build_name, genconfig_cmd, volumes=[f"{volume_name}:/etc/openvpn"])
+		logger.info("Generating ovpn config!")
+		genconfig_cmd = f"ovpn_genconfig -u {config['VPN_PROTO']}://{config['VPN_HOST']}:{config['VPN_PORT']}"
+		res = docker_client.containers.run(build_name, genconfig_cmd, volumes=[f"{volume_name}:/etc/openvpn"])
+		logger.info(res)
 
 		#create ca related files
-		docker_client.containers.run(build_name, "/bin/bash /initpki.sh", volumes=[f"{volume_name}:/etc/openvpn"])
+		logger.info("Running initpki!")
+		res = docker_client.containers.run(build_name, "/bin/bash /initpki.sh", volumes=[f"{volume_name}:/etc/openvpn"])
+		logger.info(res)
 
 		#start vpn service
+		logger.info("Starting VPN Service!")
 		vpn_service = docker_client.containers.run(
 			build_name, 
 			detach=True, 
-			ports={f"{VPN_PORT}/{VPN_PROTO}": int(VPN_PORT)}, 
+			ports={f"{config['VPN_PORT']}/{config['VPN_PROTO']}": int(config["VPN_PORT"])}, 
 			cap_add=["NET_ADMIN"], 
 			volumes=[f"{volume_name}:/etc/openvpn"]
 		)
