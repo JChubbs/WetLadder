@@ -4,8 +4,9 @@ from flask import request, send_file
 
 @app.route("/clients", methods=["POST"])
 def create_a_client():
+	ca_key_passphrase = request.json["ca_key_passphrase"]
 	client_name = request.json["client_name"]
-	Clients.create(client_name)
+	Clients.create(ca_key_passphrase, client_name)
 	file = Clients.get(client_name)
 	return send_file(file, attachment_filename=f"{client_name}.ovpn")
 

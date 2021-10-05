@@ -4,11 +4,11 @@ import os
 
 class Clients:
 
-	def create(client_name):
+	def create(ca_key_passphrase, client_name):
 		volume_name = Factory.volume_name
 		build_name = Factory.build_name
 
-		docker_client.containers.run(build_name, f"/bin/bash /build_client.sh {client_name}", remove=True, volumes=[f"{volume_name}:/etc/openvpn"])
+		docker_client.containers.run(build_name, f"/bin/bash /build_client.sh {ca_key_passphrase} {client_name}", remove=True, volumes=[f"{volume_name}:/etc/openvpn"])
 
 	def get(client_name):
 		volume_name = Factory.volume_name
