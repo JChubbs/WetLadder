@@ -1,7 +1,6 @@
 from src.app import docker_client, config, db
 from src.models.instances import Factory
 import os
-import json
 
 class Clients:
 
@@ -48,21 +47,18 @@ class Clients:
 	def get_all(build_name):
 		cur = db.cursor()
 		res = cur.execute("""
-			SELECT
-				json_object('id', id, 'instance_id', instance_id)
+			SELECT *
 			FROM clients
 			WHERE instance_id = ?
 		""", (build_name,))
-
-		out = [json.loads(i[0]) for i in res.fetchall()]
+		out = [{"id": i[0], "instance_id": i[1]} for i in res.fetchall()]
 		cur.close()
 		return out
 
 	def get(build_name, client_name):
 		cur = db.cursor()
 		res = cur.execute("""
-			SELECT
-				json_object('id', id, 'instance_id', instance_id)
+			SELECT *
 			FROM clients
 			WHERE instance_id = ?
 			AND id = ?
@@ -70,4 +66,4 @@ class Clients:
 
 		out = res.fetchone()
 		cur.close()
-		return out[0]
+		return {"id": out[0], "instance_id": out[1]}

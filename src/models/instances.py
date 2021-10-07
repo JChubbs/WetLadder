@@ -1,5 +1,4 @@
 from src.app import docker_client, logger, config, db
-import json
 
 class Factory:
 
@@ -90,22 +89,20 @@ class Factory:
 	def get_all_instances():
 		cur = db.cursor()
 		res = cur.execute("""
-			SELECT 
-			json_object('id', id, 'container_id', container_id, 'port', port, 'protocol', protocol, 'volume_name', volume_name)
+			SELECT *
 			FROM instances;
 		""")
-		out = [json.loads(i[0]) for i in res.fetchall()]
+		out = [{"id": i[0], "container_id": i[1], "port": i[2], "protocol": i[3], "volume_name": i[4]} for i in res.fetchall()]
 		cur.close()
 		return out
 
 	def get_instance(build_name):
 		cur = db.cursor()
 		res = cur.execute("""
-			SELECT 
-			json_object('id', id, 'container_id', container_id, 'port', port, 'protocol', protocol, 'volume_name', volume_name)
+			SELECT *
 			FROM instances
 			WHERE id = ?;
 		""", (build_name,))
 		out = res.fetchone()
 		cur.close()
-		return out[0]
+		return {"id": out[0], "container_id": out[1], "port": out[2], "protocol": out[3], "volume_name": out[4]}
