@@ -30,7 +30,7 @@ class Factory:
 		vpn_service = docker_client.containers.run(
 			build_name, 
 			detach=True, 
-			ports={f"{port}/{proto}": int(port)}, 
+			ports={f"1194/{proto}": int(port)}, 
 			cap_add=["NET_ADMIN"], 
 			volumes=[f"{volume_name}:/etc/openvpn"]
 		)
