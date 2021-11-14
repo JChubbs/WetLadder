@@ -36,7 +36,7 @@ class ClientManager:
 		os.mkdir(f"{client_dir}/config")
 
 		if target == Target.WIN_64:
-			shutil.move("WetLadder-Client/client-builds/win-64/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
+			shutil.copyfile("WetLadder-Client/client-builds/win-64/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
 
 			shutil.copytree("WetLadder-Client/openvpn-builds/win-64", f"{client_dir}/win-64")
 			shutil.copyfile(f"./tmp/{client_name}.ovpn", f"{client_dir}/config/{client_name}.ovpn")
