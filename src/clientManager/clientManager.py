@@ -1,7 +1,6 @@
 import os
 import shutil
 import logging
-import subprocess
 from enum import Enum
 
 class Target(Enum):
@@ -37,13 +36,9 @@ class ClientManager:
 		os.mkdir(f"{client_dir}/config")
 
 		if target == Target.WIN_64:
-			#build client for target
-			os.environ["GOOS"] = "windows"
-			os.environ["GOARCH"] = "386"
-			p = subprocess.run(["go", "build", "internal/client/WetLadder-Client.go"], cwd="WetLadder-Client")
-			shutil.move("WetLadder-Client/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
+			shutil.move("WetLadder-Client/client-builds/win-64/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
 
-			shutil.copytree("WetLadder-Client/win-64", f"{client_dir}/win-64")
+			shutil.copytree("WetLadder-Client/openvpn-builds/win-64", f"{client_dir}/win-64")
 			shutil.copyfile(f"./tmp/{client_name}.ovpn", f"{client_dir}/config/{client_name}.ovpn")
 			with open(f"{client_dir}/.env", "w") as dotenv_f:
 				dotenv_f.write("EXECUTABLE_PATH=win-64/openvpn.exe\n")
