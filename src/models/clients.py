@@ -1,5 +1,6 @@
 from src.app import docker_client, config, db
 from src.models.instances import Factory
+from src.clientManager.clientManager import Target, ClientManager
 import os
 
 class Clients:
@@ -28,6 +29,18 @@ class Clients:
 			f_writer.write(contents)
 
 		return f"./tmp/{client_name}.ovpn"
+
+	def get_client(
+		build_name: str,
+		client_name: str, 
+		target: Target
+		):
+
+		if not ClientManager.client_config_exists(client_name):
+			logging.info(f"client config file doesn't exist for {client_name} - retrieving")
+			Clients.get_config(build_name, client_name)
+
+		return ClientManager.build_client(target, client_name)
 
 	def delete(build_name, client_name):
 		volume_name = Factory.get_volume(build_name)
