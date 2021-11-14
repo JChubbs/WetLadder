@@ -1,6 +1,7 @@
 from src.app import docker_client, config, db
 from src.models.instances import Factory
 from src.clientManager.clientManager import Target, ClientManager
+import logging
 import os
 
 class Clients:
