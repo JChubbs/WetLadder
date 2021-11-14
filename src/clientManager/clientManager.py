@@ -40,17 +40,16 @@ class ClientManager:
 			#build client for target
 			os.environ["GOOS"] = "windows"
 			os.environ["GOARCH"] = "386"
-			p = subprocess.Popen(["go", "build", "-o", "WetLadder-Client.exe", "internal/client/WetLadder-Client.go"], cwd="WetLadder-Client")
-			#os.system(f"GOOS=windows GOARCH=386 go build -o {client_dir} WetLadder-Client/internal/client/WetLadder-Client.go")
+			p = subprocess.run(["go", "build", "internal/client/WetLadder-Client.go"], cwd="WetLadder-Client")
+			shutil.move("WetLadder-Client/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
+
 			shutil.copytree("WetLadder-Client/win-64", f"{client_dir}/win-64")
 			shutil.copyfile(f"./tmp/{client_name}.ovpn", f"{client_dir}/config/{client_name}.ovpn")
 			with open(f"{client_dir}/.env", "w") as dotenv_f:
 				dotenv_f.write("EXECUTABLE_PATH=win-64/openvpn.exe\n")
 				dotenv_f.write(f"OPENVPN_CONFIG=config/{client_name}.ovpn\n")
 				dotenv_f.write("PLATFORM=win-64\n")	
-			#wait for go build to finish
-			p.wait()
-			shutil.move("WetLadder-Client/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
+
 			#zip
 			shutil.make_archive(f"{client_dir}", "zip", client_dir)
 			out_file = f"{client_dir}.zip"
