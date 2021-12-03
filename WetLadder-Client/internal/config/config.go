@@ -12,6 +12,10 @@ type Config struct {
 	ExecutablePath string `envconfig:"EXECUTABLE_PATH"`
 	OpenVPNConfig  string `envconfig:"OPENVPN_CONFIG"`
 	Platform 	   string `envconfig:"PLATFORM"`
+
+	ObfuscationType string `envconfig:"OBFUSCATION_TYPE"`
+	ObfuscationTarget string `envconfig:"OBFUSCATION_TARGET"`
+	ObfuscatorPath string `envconfig:"OBFUSCATOR_PATH"`
 }
 
 func GetConfig() (Config, error) {

@@ -3,7 +3,7 @@ import json
 import logging
 import subprocess
 
-from src.app import db
+from src.app import db, config
 
 class Obfuscators:
 
@@ -90,3 +90,31 @@ class Obfuscators:
 		db.commit()
 
 		return obfuscator_id
+
+	def get_client_obfuscator(client_name: str) -> dict:
+		cur = db.cursor()
+
+		cur.execute("""
+			SELECT
+				obfuscation_method,
+				listener_port
+			FROM
+				obfuscators
+				JOIN
+				clients
+				ON obfuscators.id = clients.obfuscator_id
+			WHERE clients.id = ?
+		""", (client_name,))
+
+		res = cur.fetchone()
+		if res is None:
+			return {}
+
+		obfuscator_settings = {
+			"obfuscation_type": res[0],
+			"obfuscation_target": f"{config['VPN_HOST']}:{res[1]}"
+		}
+
+		cur.close()
+
+		return obfuscator_settings
