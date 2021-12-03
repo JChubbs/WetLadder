@@ -56,10 +56,9 @@ class Obfuscators:
 			"-transparent",
 			"-server", 
 			"-orport", f"127.0.0.1:{fwd_port}", 
-			"-transports", 
-			obfuscation_method,
-			"-bindaddr",
-			f"{obfuscation_method}-0.0.0.0:{listener_port}"
+			"-transports", obfuscation_method,
+			"-bindaddr", f"{obfuscation_method}-0.0.0.0:{listener_port}",
+			"-ptversion", "2"
 		]
 		
 		if obfuscation_method == "obfs2":
@@ -70,6 +69,7 @@ class Obfuscators:
 			logging.exception(msg)
 			raise Exception(msg) 
 
+		#TODO test udp obfuscation
 		if fwd_proto == "udp":
 			obfuscator_command.append("-udp")
 
