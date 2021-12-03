@@ -86,6 +86,6 @@ class ClientManager:
 			raise Exception(err)
 
 		#delete folder
-		#shutil.rmtree(client_dir)
+		shutil.rmtree(client_dir)
 
 		return out_file	
