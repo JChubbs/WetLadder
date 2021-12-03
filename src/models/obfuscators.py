@@ -3,7 +3,7 @@ import json
 import logging
 import subprocess
 
-from src.app import db
+from src.app import db, config
 
 class Obfuscators:
 
@@ -56,10 +56,9 @@ class Obfuscators:
 			"-transparent",
 			"-server", 
 			"-orport", f"127.0.0.1:{fwd_port}", 
-			"-transports", 
-			obfuscation_method,
-			"-bindaddr",
-			f"{obfuscation_method}-0.0.0.0:{listener_port}"
+			"-transports", obfuscation_method,
+			"-bindaddr", f"{obfuscation_method}-0.0.0.0:{listener_port}",
+			"-ptversion", "2"
 		]
 		
 		if obfuscation_method == "obfs2":
@@ -70,6 +69,7 @@ class Obfuscators:
 			logging.exception(msg)
 			raise Exception(msg) 
 
+		#TODO test udp obfuscation
 		if fwd_proto == "udp":
 			obfuscator_command.append("-udp")
 
@@ -90,3 +90,31 @@ class Obfuscators:
 		db.commit()
 
 		return obfuscator_id
+
+	def get_client_obfuscator(client_name: str) -> dict:
+		cur = db.cursor()
+
+		cur.execute("""
+			SELECT
+				obfuscation_method,
+				listener_port
+			FROM
+				obfuscators
+				JOIN
+				clients
+				ON obfuscators.id = clients.obfuscator_id
+			WHERE clients.id = ?
+		""", (client_name,))
+
+		res = cur.fetchone()
+		if res is None:
+			return {}
+
+		obfuscator_settings = {
+			"obfuscation_type": res[0],
+			"obfuscation_target": f"{config['VPN_HOST']}:{res[1]}"
+		}
+
+		cur.close()
+
+		return obfuscator_settings

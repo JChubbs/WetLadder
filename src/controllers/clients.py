@@ -25,7 +25,8 @@ def get_a_client(instance_id, client_id):
 def create_a_client(instance_id):
 	ca_key_passphrase = request.json["ca_key_passphrase"]
 	client_name = request.json["client_name"]
-	Clients.create(instance_id, ca_key_passphrase, client_name)
+	obfuscator_id = request.json["obfuscator_id"]
+	Clients.create(instance_id, ca_key_passphrase, client_name, obfuscator_id)
 	res = Clients.get(instance_id, client_name)
 	return res
 

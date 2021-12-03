@@ -1,0 +1,3 @@
+[submodule "shapeshifter-dispatcher"]
+	path = shapeshifter-dispatcher
+	url = https://github.com/OperatorFoundation/shapeshifter-dispatcher
