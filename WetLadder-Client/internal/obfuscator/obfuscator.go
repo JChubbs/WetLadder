@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"os"
+	"io"
 
 	"github.com/phayes/freeport"
 
@@ -14,6 +15,7 @@ type Obfuscator struct {
 	ObfuscationType string
 	ObfuscationTarget string
 	ObfuscatorPath string
+	ObfuscatorConfigPath string
 	OpenVPNConfig string
 }
 
@@ -30,6 +32,7 @@ func GetObfuscator(c config.Config) (*Obfuscator, error) {
 			ObfuscationType: c.ObfuscationType,
 			ObfuscationTarget: c.ObfuscationTarget,
 			ObfuscatorPath: c.ObfuscatorPath,
+			ObfuscatorConfigPath: c.ObfuscatorConfigPath,
 			OpenVPNConfig: c.OpenVPNConfig,
 		}, nil
 	} else {
@@ -37,35 +40,63 @@ func GetObfuscator(c config.Config) (*Obfuscator, error) {
 	}
 }
 
-func (o *Obfuscator) Start() error {
+func (o *Obfuscator) Start() (string, error) {
 	//find an available port
 	port, err := freeport.GetFreePort()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	//alter config file to connect to localhost at new port
-	f, err := os.OpenFile(o.OpenVPNConfig, os.O_APPEND|os.O_WRONLY, 0600)
+	//copy and alter config file to connect to localhost at new port
+	outFileDest := fmt.Sprintf("%s-obfuscated.ovpn", o.OpenVPNConfig[:len(o.OpenVPNConfig)-5])
+	
+	source, err := os.Open(o.OpenVPNConfig)
+    if err != nil {
+            return "", err
+    }
+    defer source.Close()
+
+    destination, err := os.Create(outFileDest)
+    if err != nil {
+            return "", err
+    }
+    defer destination.Close()
+
+	_, err = io.Copy(destination, source)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	f, err := os.OpenFile(outFileDest, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return "", err
 	}
 	defer f.Close()
 	fmt.Fprintf(f, "%s", fmt.Sprintf("\nremote 127.0.0.1 %d tcp", port))
 	
-	cmd := exec.Command(
-		fmt.Sprintf("./%s", o.ObfuscatorPath),
+	args := []string{
 		"-transparent",
 		"-client",
-		"-state",
-		"state",
+		"-state", "state",
 		"-target", o.ObfuscationTarget,
 		"-transports", o.ObfuscationType,
 		"-proxylistenaddr", fmt.Sprintf("127.0.0.1:%d", port),
-		"-ptversion", "2",
 		"-logLevel", "DEBUG",
 		"-enableLogging",
+	}
+
+	//add method specific options
+	if o.ObfuscationType == "obfs2" {
+		args = append(args, "-ptversion", "2")
+	} else if o.ObfuscationType == "obfs4" {
+		args = append(args, "-optionsFile", o.ObfuscatorConfigPath)
+	}
+
+	cmd := exec.Command(
+		fmt.Sprintf("./%s", o.ObfuscatorPath),
+		args...
 	)
 	cmd.Start()
 
-	return nil
+	return outFileDest, nil
 }

@@ -16,6 +16,7 @@ type Config struct {
 	ObfuscationType string `envconfig:"OBFUSCATION_TYPE"`
 	ObfuscationTarget string `envconfig:"OBFUSCATION_TARGET"`
 	ObfuscatorPath string `envconfig:"OBFUSCATOR_PATH"`
+	ObfuscatorConfigPath string `envconfig:"OBFUSCATOR_CONFIG_PATH"`
 }
 
 func GetConfig() (Config, error) {

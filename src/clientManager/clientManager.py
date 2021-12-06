@@ -45,6 +45,7 @@ class ClientManager:
 		shutil.copyfile(f"./tmp/{client_name}.ovpn", f"{client_dir}/config/{client_name}.ovpn")
 
 		if obfuscation_set:
+			obfs_conf = ""
 			#edit config file to no longer have remote addres and add route
 			with open(f"{client_dir}/config/{client_name}.ovpn", "r") as conf_file:
 				new_lines = []
@@ -55,6 +56,12 @@ class ClientManager:
 			with open(f"{client_dir}/config/{client_name}.ovpn", "w") as conf_file:
 				for line in new_lines:
 					conf_file.write(line)
+
+			#create method specific config files
+			if obfuscation_settings["obfuscation_type"] == "obfs4":
+				obfs_conf = "config/obfs-conf.json"
+				with open("{client_dir}/config/obfs-conf.json", "w") as obfs_conf_f:
+					obfs_conf_f.write(obfuscation_settings["config"])
 
 		if target == Target.WIN_64:
 			shutil.copyfile("WetLadder-Client/client-builds/win-64/WetLadder-Client.exe", f"{client_dir}/WetLadder-Client.exe")
@@ -71,6 +78,7 @@ class ClientManager:
 					dotenv_f.write(f"OBFUSCATION_TYPE={obfuscation_settings['obfuscation_type']}\n")
 					dotenv_f.write(f"OBFUSCATION_TARGET={obfuscation_settings['obfuscation_target']}\n")
 					dotenv_f.write("OBFUSCATOR_PATH=shapeshifter/shapeshifter-dispatcher.exe\n")
+					dotenv_f.write(f"OBFUSCATOR_PATH={obfs_conf}\n")
 
 			#zip
 			shutil.make_archive(f"{client_dir}", "zip", client_dir)
