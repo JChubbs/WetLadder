@@ -2,6 +2,7 @@ import uuid
 import json
 import logging
 import subprocess
+import time
 
 from src.app import db, config
 
@@ -84,17 +85,20 @@ class Obfuscators:
 		process = subprocess.Popen(obfuscator_command)
 		logging.info(process.pid)
 
+		#wait a second to allow to generate config files
+		time.sleep(1)
+
 		#get method specific config (post run)
 		if obfuscation_method == "obfs2":
 			pass
 
 		elif obfuscation_method == "obfs4":
-			with open(f"./states/{obfuscator_id}", "r") as state_f:
+			with open(f"./states/{obfuscator_id}/obfs4_bridgeline.txt", "r") as state_f:
 				#pull config out of state file
-				data = state_f.read().split(" ")
+				data = state_f.readlines()[-1].split(" ")
 				method_config = {
-					"cert": data[4][5:],
-					"iat_mode": data[5][9:]
+					"cert": data[5][5:],
+					"iat_mode": data[6][9:10]
 				} 
 
 		cur.execute("""
@@ -132,7 +136,7 @@ class Obfuscators:
 		obfuscator_settings = {
 			"obfuscation_type": res[0],
 			"obfuscation_target": f"{config['VPN_HOST']}:{res[1]}",
-			"config": json.loads(res[2])
+			"config": res[2]
 		}
 
 		cur.close()

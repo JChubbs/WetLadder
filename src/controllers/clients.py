@@ -17,7 +17,7 @@ def get_a_client(instance_id, client_id):
 		target = Target[request.args.get("target")]
 		file = Clients.get_client(instance_id, client_id, target)
 		file_name = file[file.rfind("/")+1:]
-		return send_file(file, attachment_filename=file)
+		return send_file(file, attachment_filename=file_name)
 	else:
 		res = Clients.get(instance_id, client_id)
 		return res

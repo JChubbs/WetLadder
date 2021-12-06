@@ -60,7 +60,7 @@ class ClientManager:
 			#create method specific config files
 			if obfuscation_settings["obfuscation_type"] == "obfs4":
 				obfs_conf = "config/obfs-conf.json"
-				with open("{client_dir}/config/obfs-conf.json", "w") as obfs_conf_f:
+				with open(f"{client_dir}/config/obfs-conf.json", "w") as obfs_conf_f:
 					obfs_conf_f.write(obfuscation_settings["config"])
 
 		if target == Target.WIN_64:
@@ -78,7 +78,7 @@ class ClientManager:
 					dotenv_f.write(f"OBFUSCATION_TYPE={obfuscation_settings['obfuscation_type']}\n")
 					dotenv_f.write(f"OBFUSCATION_TARGET={obfuscation_settings['obfuscation_target']}\n")
 					dotenv_f.write("OBFUSCATOR_PATH=shapeshifter/shapeshifter-dispatcher.exe\n")
-					dotenv_f.write(f"OBFUSCATOR_PATH={obfs_conf}\n")
+					dotenv_f.write(f"OBFUSCATOR_CONFIG_PATH={obfs_conf}\n")
 
 			#zip
 			shutil.make_archive(f"{client_dir}", "zip", client_dir)
