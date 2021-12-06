@@ -34,11 +34,12 @@ func main() {
 
 	if obfuscator != nil {
 		fmt.Println("Starting obfuscator!")
-		err := obfuscator.Start()
+		newConfig, err := obfuscator.Start()
 		if err != nil {
 			fmt.Printf("Encountered an error when starting the obfuscator! %s\n", err)
 			return
 		}
+		config.OpenVPNConfig = newConfig
 	}
 
 	if _, err := os.Stat(config.ExecutablePath); err != nil {

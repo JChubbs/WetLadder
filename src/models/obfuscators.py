@@ -2,6 +2,7 @@ import uuid
 import json
 import logging
 import subprocess
+import time
 
 from src.app import db, config
 
@@ -33,6 +34,8 @@ class Obfuscators:
 
 	def create(instance_id, listener_port: int, obfuscation_method):
 
+		obfuscator_id = uuid.uuid1()
+
 		cur = db.cursor()
 
 		#get listener port from instance
@@ -54,14 +57,19 @@ class Obfuscators:
 		obfuscator_command = [
 			"./shapeshifter-dispatcher/shapeshifter-dispatcher", 
 			"-transparent",
+			"-state", f"./states/{obfuscator_id}",
 			"-server", 
 			"-orport", f"127.0.0.1:{fwd_port}", 
 			"-transports", obfuscation_method,
 			"-bindaddr", f"{obfuscation_method}-0.0.0.0:{listener_port}",
-			"-ptversion", "2"
 		]
 		
 		if obfuscation_method == "obfs2":
+			obfuscator_command.append("-ptversion")
+			obfuscator_command.append("2")
+
+		elif obfuscation_method == "obfs4":
+			#nothing extra needed
 			pass
 
 		else:
@@ -77,7 +85,21 @@ class Obfuscators:
 		process = subprocess.Popen(obfuscator_command)
 		logging.info(process.pid)
 
-		obfuscator_id = uuid.uuid1()
+		#wait a second to allow to generate config files
+		time.sleep(1)
+
+		#get method specific config (post run)
+		if obfuscation_method == "obfs2":
+			pass
+
+		elif obfuscation_method == "obfs4":
+			with open(f"./states/{obfuscator_id}/obfs4_bridgeline.txt", "r") as state_f:
+				#pull config out of state file
+				data = state_f.readlines()[-1].split(" ")
+				method_config = {
+					"cert": data[5][5:],
+					"iat_mode": data[6][9:10]
+				} 
 
 		cur.execute("""
 			INSERT INTO obfuscators
@@ -97,7 +119,8 @@ class Obfuscators:
 		cur.execute("""
 			SELECT
 				obfuscation_method,
-				listener_port
+				listener_port,
+				config
 			FROM
 				obfuscators
 				JOIN
@@ -112,7 +135,8 @@ class Obfuscators:
 
 		obfuscator_settings = {
 			"obfuscation_type": res[0],
-			"obfuscation_target": f"{config['VPN_HOST']}:{res[1]}"
+			"obfuscation_target": f"{config['VPN_HOST']}:{res[1]}",
+			"config": res[2]
 		}
 
 		cur.close()
